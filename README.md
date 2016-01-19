@@ -27,4 +27,3 @@ The project files are "hacked" on to use the "External" location referenced by t
 Just for reference, a sample properties file is included.  This one is simple in that it only contains one property that points to a default in the even that the environment variable isn't set:
 
 ![References file](https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectReferenceFile.PNG)
-
