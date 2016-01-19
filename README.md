@@ -14,17 +14,17 @@ Given that the project has the following layout:
 
 The projects refernce external components in the "External" directory:
 
-[[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectExisting_references.PNG]]
+![Existing References](https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectExisting_references.PNG)
 
 The "External" directory is hoisted up to the directory of your choice - in this case, the top level directory where it can be placed in its own repo:
 
-[[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectAfter.PNG]]
+![layout changes](https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectAfter.PNG)
 
 The project files are "hacked" on to use the "External" location referenced by the global properties file ( typcially a .csproj file):
 
-[[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectChanges.PNG]]
+![Project changes](https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectChanges.PNG)
 
 Just for reference, a sample properties file is included.  This one is simple in that it only contains one property that points to a default in the even that the environment variable isn't set:
 
-[[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectReferenceFile.PNG]]
+![References file](https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectReferenceFile.PNG)
 
