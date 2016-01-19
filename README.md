@@ -10,7 +10,7 @@ The global properties file contains an environment variable that should point to
 
 Given that the project has the following layout:
 
-[[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectExisting.PNG]]
+[https://github.com/jsnmc/ReferenceHacker/blob/master/docs/ProjectExisting.PNG]
 
 The projects refernce external components in the "External" directory:
 
