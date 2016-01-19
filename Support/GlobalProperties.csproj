@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+   <THIRD_PARTY_REFPATH Condition=" '$(THIRD_PARTY_REFPATH)' == '' ">O:\Programming\Externals-work\TestProject\External\Microsoft\Unity</THIRD_PARTY_REFPATH>
+  </PropertyGroup>
+ </Project>
