@@ -18,6 +18,11 @@ namespace ReferenceHacker
             return Path.GetFullPath((new Uri(absolutePath)).LocalPath);
         }
 
+        public static string ResolveRelativePath(string referencePath, string relativePath)
+        {
+            Uri uri = new Uri(Path.Combine(referencePath, relativePath));
+            return Path.GetFullPath(uri.AbsolutePath);
+        }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Auto)]
         static extern bool PathRelativePathTo(
@@ -29,9 +34,10 @@ namespace ReferenceHacker
 
         public static String MakeRelativePathFromFullPaths(String fromFilePath, String toFilePath)
         {
-            const Int32 MAX_PATH = 260;
+            const int MAX_PATH = 260;
             StringBuilder str = new StringBuilder(MAX_PATH);
-            bool b = PathRelativePathTo(str, new FileInfo(fromFilePath).Directory.FullName, FileAttributes.Directory, toFilePath, FileAttributes.Normal);
+            var directoryInfo = new FileInfo(fromFilePath).Directory;
+            bool b = directoryInfo != null && PathRelativePathTo(str, directoryInfo.FullName, FileAttributes.Directory, toFilePath, FileAttributes.Normal);
 
             return str.ToString();
         }

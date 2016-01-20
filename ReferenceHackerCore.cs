@@ -50,13 +50,14 @@ namespace ReferenceHacker
         /// <param name="existingReferencesMap">list of paths to files found at the library/external path</param>
         /// <param name="existingReferenceRootPath">string - path to the library/external path</param>
         /// <param name="ReferenceVar">string - the environment varible to reference in the path</param>
-        public static void SetReferenceMsBuild( string projectFile, HashSet<string> existingReferencesMap,string existingReferenceRootPath,string ReferenceVar)
+        public static void SetReferenceMsBuild( string projectFile, HashSet<string> existingReferencesMap,string existingReferenceRootPath,string ReferenceVar, bool verbose)
         {
             try
             {
                 var msbuildProjEng =  ReferenceHackerCore.MsbuildProjEng;
                 msbuildProjEng.Load(projectFile);
-                var referencest = msbuildProjEng.GetEvaluatedItemsByName("Reference").OfType<BuildItem>();
+                //var referencest = msbuildProjEng.GetEvaluatedItemsByName("Reference").OfType<BuildItem>();
+                var directoryPath = System.IO.Path.GetDirectoryName(projectFile);
 
                 var references =
                     msbuildProjEng.GetEvaluatedItemsByName("Reference")
@@ -64,26 +65,45 @@ namespace ReferenceHacker
                         .Where(
                             item =>
                             existingReferencesMap.Contains(
-                                ProjectUtils.GetFullRefPathFromRelPath(
-                                    existingReferenceRootPath,
+                                ProjectUtils.ResolveRelativePath(
+                                    directoryPath,
                                     item.GetMetadata("HintPath"))));
 
                 var buildItems = references as IList<BuildItem> ?? references.ToList();
+                
                 if (buildItems.Any())
                 {
                     foreach (var reference in buildItems)
                     {
-                        string tempStr = ProjectUtils.GetFullRefPathFromRelPath(
-                            existingReferenceRootPath,
-                            reference.GetMetadata("HintPath"));
-                        reference.SetMetadata("HintPath", tempStr.Replace(existingReferenceRootPath, ReferenceVar));
+                        string referenceHintPath = reference.GetMetadata("HintPath");
+                        if (verbose)
+                        {
+                            Console.WriteLine("Found Reference: {0}", referenceHintPath);
+                        }
+
+
+                        var tempStr = ProjectUtils.ResolveRelativePath(directoryPath, referenceHintPath);
+                        
+                        var projectPropertyExpanded = tempStr.Replace(existingReferenceRootPath, ReferenceVar);
+                        if (verbose)
+                        {
+                            Console.WriteLine("\t\tExpanded Reference: {0}", tempStr);
+                            Console.WriteLine("\t\tInserted Global Property Variable: {0}", projectPropertyExpanded);
+                        }
+
+                        reference.SetMetadata("HintPath", projectPropertyExpanded);
                     }
                 }
                 msbuildProjEng.Save(projectFile);
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex);
+                if (verbose)
+                {
+                    Console.WriteLine("Exception: {0}", ex.Message);
+                }
+                else
+                    System.Diagnostics.Trace.WriteLine(ex);
             }
         }
 

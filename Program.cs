@@ -24,6 +24,7 @@ namespace ReferenceHacker
             string existingReferenceRootPath = null;
             string targetRootPath = null;
             string globalPropertiesFile = null;
+            bool verboseMode = false;
 
             List<string> solutionList = new List<string>();
 
@@ -38,13 +39,14 @@ namespace ReferenceHacker
                     v => solutionList.Add (v) },
                 { "m|mirror", "skips this step by default, but if the option is present the root reference directory will be copied to the destination.",
                     v => runMirror = v != null },
+                { "v|verbose",  "run in verbose output mode",
+                    v => verboseMode = v != null },
                 { "h|help",  "show this message and exit",
                     v => show_help = v != null }};
 
-            List<string> extra;
             try
             {
-                extra = p.Parse(args);
+                p.Parse(args);
             }
             catch (OptionException e)
             {
@@ -60,14 +62,15 @@ namespace ReferenceHacker
                 return;
             }
 
-            validateInput(existingReferenceRootPath, targetRootPath, globalPropertiesFile, solutionList);
+            if (!ValidateInput(existingReferenceRootPath, targetRootPath, globalPropertiesFile, solutionList))
+                return;
 
-            RunCoreLogic(existingReferenceRootPath, targetRootPath, globalPropertiesFile, solutionList, runMirror);
+            RunCoreLogic(existingReferenceRootPath, targetRootPath, globalPropertiesFile, solutionList, runMirror, verboseMode);
 
             Console.WriteLine("Run complete...");
         }
 
-        static void RunCoreLogic(string existingReferenceRootPath, string targetRootPath, string globalPropertiesFile, List<string>solutionList, bool runMirror)
+        static void RunCoreLogic(string existingReferenceRootPath, string targetRootPath, string globalPropertiesFile, List<string>solutionList, bool runMirror, bool verbose)
         {
             var existingReferencesMap = ProjectUtils.GetDllReferencePaths(existingReferenceRootPath);
 
@@ -87,8 +90,17 @@ namespace ReferenceHacker
                 // Hack on the project files
                 foreach (var proj in s.ProjectsInOrder)
                 {
-                    ReferenceHackerCore.AddGlobalImport(proj.AbsolutePath, globalPropertiesFile);
-                    ReferenceHackerCore.SetReferenceMsBuild(proj.AbsolutePath, existingReferencesMap, existingReferenceRootPath, "$(THIRD_PARTY_REFPATH)");
+                    var projectFile = !Path.HasExtension(proj.AbsolutePath) ? Path.Combine(proj.AbsolutePath, proj.ProjectName) : proj.AbsolutePath;
+
+                    if (verbose)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Blue;
+                        Console.WriteLine("Operating on project: {0} - Type: {1}", projectFile, proj.ProjectType);
+                        Console.ResetColor();
+                    }
+                
+                    ReferenceHackerCore.AddGlobalImport(projectFile, globalPropertiesFile);
+                    ReferenceHackerCore.SetReferenceMsBuild(projectFile, existingReferencesMap, existingReferenceRootPath, "$(THIRD_PARTY_REFPATH)", verbose);
                 }
             }
         }
@@ -101,38 +113,40 @@ namespace ReferenceHacker
         /// <param name="globalPropertiesFile"></param>
         /// <param name="solutionList"></param>
         /// <returns></returns>
-        static bool validateInput(string existingReferenceRootPath, string targetRootPath, string globalPropertiesFile, List<string> solutionList)
+        static bool ValidateInput(string existingReferenceRootPath, string targetRootPath, string globalPropertiesFile, List<string> solutionList)
         {
             Console.BackgroundColor = ConsoleColor.Red;
+            bool validated = true;
             if (string.IsNullOrEmpty(existingReferenceRootPath))
             {
                 Console.WriteLine("Error - missing source direcotry argument");
-                return false;
+                
+                validated = false;
             }
             if (string.IsNullOrEmpty(targetRootPath))
             {
                 Console.WriteLine("Error - missing dest direcotry argument");
-                return false;
+                validated = false;
             }
             if (string.IsNullOrEmpty(globalPropertiesFile))
             {
                 Console.WriteLine("Error - missing globals direcotry argument");
-                return false;
+                validated = false;
             }
-            if (!Directory.Exists(existingReferenceRootPath))
+            if (existingReferenceRootPath == null || !Directory.Exists(existingReferenceRootPath))
             {
                 Console.WriteLine("Error - {0} (source) dirctory not found", existingReferenceRootPath);
-                return false;
+                validated = false;
             }
-            if (!Directory.Exists(targetRootPath))
+            if (targetRootPath == null || !Directory.Exists(targetRootPath))
             {
                 Console.WriteLine("Error - {0} (dest) dirctory not found", targetRootPath);
-                return false;
+                validated = false;
             }
             if (!File.Exists(globalPropertiesFile))
             {
                 Console.WriteLine("Error - {0}  (globals) file not found", globalPropertiesFile);
-                return false;
+                validated = false;
             }
 
             if (solutionList.Any())
@@ -142,16 +156,17 @@ namespace ReferenceHacker
                     if (!File.Exists(solution))
                     {
                         Console.WriteLine("Error - {0}  (solution) file not found", solution);
-                        return false;
+                        validated = false;
                     }
                 }
             }
             else
             {
                 Console.WriteLine("Error - (vsolution) missing argument(s)");
-                return false;
+                validated = false;
             }
-            return true;
+            Console.ResetColor();
+            return validated;
         }
 
         /// <summary>
