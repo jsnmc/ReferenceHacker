@@ -34,10 +34,14 @@ namespace ReferenceHacker
 
         public static String MakeRelativePathFromFullPaths(String fromFilePath, String toFilePath)
         {
-            const int MAX_PATH = 260;
+            const Int32 MAX_PATH = 260;
             StringBuilder str = new StringBuilder(MAX_PATH);
-            var directoryInfo = new FileInfo(fromFilePath).Directory;
-            bool b = directoryInfo != null && PathRelativePathTo(str, directoryInfo.FullName, FileAttributes.Directory, toFilePath, FileAttributes.Normal);
+            if (string.IsNullOrEmpty(fromFilePath) || string.IsNullOrEmpty(toFilePath)) return string.Empty;
+
+            FileInfo fi = new FileInfo(fromFilePath);
+            if (fi.Directory == null) return string.Empty;
+
+            bool b = PathRelativePathTo(str, fi.Directory.FullName, FileAttributes.Directory, toFilePath, FileAttributes.Normal);
 
             return str.ToString();
         }

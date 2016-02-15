@@ -28,7 +28,9 @@ namespace ReferenceHacker
                 {
                     if (string.CompareOrdinal(System.IO.Path.GetFileName(import.ProjectPath), System.IO.Path.GetFileName(importFilePath)) == 0) return;
                 }
-                
+
+                //if (System.IO.Path.HasExtension(projectFile))
+
                 // Get the relative path and hack in the global file reference
                 string relativeImportFilePath = ProjectUtils.MakeRelativePathFromFullPaths(projectFile, importFilePath);
                 msbuildProjEng.Imports.AddNewImport(relativeImportFilePath ?? importFilePath, "true");

@@ -29,7 +29,7 @@ namespace ReferenceHacker
             List<string> solutionList = new List<string>();
 
             var p = new OptionSet() {
-                { "s|source=", "a directoryy path to the folder that contains the project references",
+                { "s|source=", "a directory path to the folder that contains the project references",
                     (string v) => existingReferenceRootPath = v },
                 { "r|dest=","a directory path in which the references will be changed to point to.",
                     (string v) => targetRootPath = v },
